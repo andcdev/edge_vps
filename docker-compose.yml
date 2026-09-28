@@ -18,7 +18,9 @@ services:
     environment:
       ACME_EMAIL: ${ACME_EMAIL:?imposta ACME_EMAIL nel file .env}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # La cartella e non il file: git aggiorna un file sostituendolo, e un file montato da solo
+      # resterebbe quello vecchio dentro il container. Con la cartella "caddy reload" vede il nuovo.
+      - ./caddy:/etc/caddy:ro
       # Certificati e chiavi ACME: perderli vuol dire richiederli tutti da capo.
       - caddy_data:/data
       - caddy_config:/config

@@ -20,7 +20,7 @@ Se si ferma l'edge si fermano tutti: è piccolo e riparte in un secondo, ma è i
 
 | File | |
 |---|---|
-| `Caddyfile` | un blocco per dominio |
+| `caddy/Caddyfile` | un blocco per dominio |
 | `docker-compose.yml` | il container, le porte, le reti dei siti |
 | `reti.sh` | crea le reti `proxy-*` con sottoreti fisse (una volta sola, si può rilanciare) |
 
@@ -36,6 +36,20 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile   # dopo av
 docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
 ```
 
+## Aggiornamento automatico
+
+`deploy/aggiorna.sh`, installato come `edge-aggiorna` con un timer ogni 5 minuti (come `magopdf-aggiorna`).
+Un push su `main` che cambia `caddy/Caddyfile` arriva sulla VPS e viene applicato con `caddy reload`, senza
+fermi. Prima e dopo interroga ogni dominio del Caddyfile: se uno che rispondeva smette, torna al commit di prima.
+Se cambiano `docker-compose.yml` o `reti.sh` non li applica (servirebbe fermare tutti i siti): lo scrive nel
+registro e si fanno a mano.
+
+```bash
+/opt/edge/deploy/aggiorna.sh --installa     # una volta sola
+edge-aggiorna --stato                        # cosa c'è da prendere
+tail -f /var/log/edge-aggiorna.log
+```
+
 ## Aggiungere un sito
 
 1. DNS del dominio → `89.58.9.88`.
@@ -43,7 +57,7 @@ docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
    `docker compose up -d` (ricrea l'edge: pochi secondi di fermo per tutti; evitabile con
    `docker network connect proxy-<sito> edge-caddy`).
 3. Lo stack del sito entra in `proxy-<sito>` senza pubblicare porte, con un nome (alias) noto.
-4. Nel `Caddyfile`:
+4. Nel `caddy/Caddyfile`:
    ```
    nuovosito.it {
    	import accessi
