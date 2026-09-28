@@ -1,0 +1,39 @@
+# Proxy edge della VPS. Vedi README.md per le reti e lo scambio delle porte.
+#
+# Avvio:   ./reti.sh                 (una volta sola: crea le reti proxy-*)
+#          docker compose up -d
+name: edge
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: edge-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+      # Pannelli di MagoPDF: passano da qui per usare lo stesso certificato.
+      - "8443:8443"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?imposta ACME_EMAIL nel file .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificati e chiavi ACME: perderli vuol dire richiederli tutti da capo.
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy-magopdf
+      - proxy-lsf
+
+# Create da reti.sh con una sottorete fissa: i siti dietro l'edge la usano per
+# fidarsi dell'X-Forwarded-For (nginx di MagoPDF: set_real_ip_from).
+networks:
+  proxy-magopdf:
+    external: true
+  proxy-lsf:
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:

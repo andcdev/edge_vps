@@ -1,0 +1,77 @@
+# Proxy edge della VPS: l'unico container con porte pubbliche.
+#
+# Ogni sito vive nel suo stack Docker e si collega qui con una rete sua
+# (proxy-<sito>). L'edge fa tre cose e basta: certificati HTTPS, smistamento
+# per nome di dominio, redirect da www. Le regole di un sito (chiavi, noindex,
+# header) restano nel suo stack, dove le trova chi ci lavora.
+#
+# Nomi che non sono qui sotto: su https nessun certificato, la connessione si
+# chiude; su http la connessione viene chiusa senza risposta. Chi scansiona
+# l'IP non scopre cosa c'e' sulla macchina.
+#
+# Dopo una modifica:  docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+{
+	email {$ACME_EMAIL}
+}
+
+(accessi) {
+	log {
+		output stdout
+		format json
+	}
+}
+
+# Da www al nome nudo, in un salto solo anche partendo da http.
+(senza-www) {
+	redir https://{args[0]}{uri} 301
+}
+
+# ------------------------------------------------------------------ MagoPDF
+# Verso fe-web in HTTPS, sulla rete proxy-magopdf. Il suo nginx resta com'era:
+# redirect da www, header, CSP, pannelli. Il certificato di fe-web non si
+# verifica: e' quello vecchio o un self-signed, e il tratto e' interno alla
+# macchina. Quello che vede il visitatore e' il certificato dell'edge.
+#
+# header_up Host: verso un upstream https Caddy manderebbe come Host il nome
+# del container, e nginx e Laravel non vedrebbero piu' magopdf.com (niente
+# redirect da www, canonical sbagliati, pannelli con PMA_ABSOLUTE_URI rotto).
+(magopdf) {
+	reverse_proxy https://magopdf-fe-web:{args[0]} {
+		header_up Host {hostport}
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+magopdf.com, www.magopdf.com {
+	import accessi
+	import magopdf 443
+}
+
+http://www.magopdf.com {
+	import senza-www magopdf.com
+}
+
+# Pannelli (phpMyAdmin e statistiche): la password la chiede fe-web.
+magopdf.com:8443 {
+	import accessi
+	import magopdf 8443
+}
+
+# ------------------------------------------------------- Lista Spesa Facile
+# Sito vetrina e API li serve il Caddy dello stack LSF, che distingue i due
+# nomi da solo: X-App-Key, noindex e robots.txt dell'API stanno la'.
+listaspesafacile.com, api.listaspesafacile.com {
+	import accessi
+	reverse_proxy lsf-caddy:80
+}
+
+www.listaspesafacile.com, http://www.listaspesafacile.com {
+	import senza-www listaspesafacile.com
+}
+
+# ------------------------------------------------------------ tutto il resto
+http:// {
+	abort
+}
