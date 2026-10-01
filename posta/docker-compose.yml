@@ -9,7 +9,7 @@ services:
     container_name: posta-stalwart
     restart: unless-stopped
     environment:
-      # Indirizzo pubblico del pannello e della webmail, servito dall'edge.
+      # Indirizzo pubblico del pannello (/admin, /account), servito dall'edge.
       STALWART_PUBLIC_URL: https://mail.listaspesafacile.com
     # Solo IPv4: su IPv6 Docker passerebbe dal suo proxy e Stalwart vedrebbe il gateway al posto del vero
     # mittente (SPF, liste nere e antispam sbagliati). Il nome mail.* ha solo il record A.

@@ -6,7 +6,7 @@ Server di posta della VPS: [Stalwart](https://stalw.art) v0.16, un container sol
 ```
 Internet :25 :465 :587 :993 ──► posta-stalwart (porte pubblicate da Docker, solo IPv4)
 Internet :443 mail.listaspesafacile.com ──► edge (Caddy) ──► posta-stalwart:8080   rete proxy-posta 10.201.2.0/24
-                                                                                    (pannello /admin e webmail)
+                                                                                    (pannello /admin e /account)
 ```
 
 | Casella | |
