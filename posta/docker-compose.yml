@@ -28,6 +28,31 @@ services:
       proxy-posta:
         ipv4_address: 10.201.2.10
 
+  # Webmail (Roundcube) su webmail.listaspesafacile.com, servita dall'edge. Captcha Turnstile al login (rcguard).
+  webmail:
+    build: ./webmail
+    image: posta-webmail:1.7.4
+    container_name: posta-webmail
+    restart: unless-stopped
+    depends_on:
+      - stalwart
+    # TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, ROUNDCUBEMAIL_DES_KEY: solo sulla VPS (permessi 600).
+    env_file: webmail.env
+    environment:
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+      ROUNDCUBEMAIL_PLUGINS: rcguard,archive,zipdownload
+      ROUNDCUBEMAIL_SKIN: elastic
+      ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE: 25M
+    # IMAP/SMTP verso Stalwart sulla rete interna, con il nome giusto per il certificato.
+    extra_hosts:
+      - "mail.listaspesafacile.com:10.201.2.10"
+    volumes:
+      - webmail:/var/roundcube/db
+      - ./webmail/config.inc.php:/var/roundcube/config/posta.inc.php:ro
+    networks:
+      proxy-posta:
+        ipv4_address: 10.201.2.20
+
 networks:
   proxy-posta:
     external: true
@@ -35,3 +60,4 @@ networks:
 volumes:
   etc:
   dati:
+  webmail:

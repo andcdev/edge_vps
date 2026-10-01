@@ -79,6 +79,12 @@ mail.listaspesafacile.com {
 	reverse_proxy posta-stalwart:8080
 }
 
+# Webmail (Roundcube, posta/webmail). Il captcha al login lo mette Roundcube (rcguard + Turnstile).
+webmail.listaspesafacile.com {
+	import accessi
+	reverse_proxy posta-webmail:80
+}
+
 # ------------------------------------------------------------ tutto il resto
 http:// {
 	abort
