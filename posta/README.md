@@ -7,6 +7,8 @@ Server di posta della VPS: [Stalwart](https://stalw.art) v0.16, un container sol
 Internet :25 :465 :587 :993 ──► posta-stalwart (porte pubblicate da Docker, solo IPv4)
 Internet :443 mail.listaspesafacile.com ──► edge (Caddy) ──► posta-stalwart:8080   rete proxy-posta 10.201.2.0/24
                                                                                     (pannello /admin e /account)
+Internet :443 webmail.listaspesafacile.com ──► edge ──► posta-webmail:80 (Roundcube, 10.201.2.20)
+                                                         └─ IMAP 993 / SMTP 465 ──► posta-stalwart (rete interna)
 ```
 
 | Casella | |
@@ -41,6 +43,20 @@ Il certificato non lo chiede Stalwart (80 e 443 sono dell'edge): Caddy lo ottien
 `mail.listaspesafacile.com` del Caddyfile e `certificato.sh` lo copia in `tls/` e lo fa ricaricare a Stalwart
 (`ReloadTlsCertificates`, senza fermo). Finché il record DNS di `mail.` non c'è, non c'è certificato e SMTP/IMAP
 non offrono TLS.
+
+## Webmail
+
+Stalwart non ha una webmail (`/account` è solo la gestione dell'account): c'è Roundcube in `webmail/`, su
+<https://webmail.listaspesafacile.com>. Si entra con indirizzo completo e password della casella.
+
+- Captcha a ogni login: plugin rcguard (fork di pbiering, l'unico con Turnstile) con Cloudflare Turnstile.
+  Chiavi in `webmail.env` (solo sulla VPS, 600) insieme a `ROUNDCUBEMAIL_DES_KEY`. Dopo averle cambiate:
+  `docker compose up -d webmail` (un semplice restart non rilegge il file).
+- Roundcube parla con Stalwart sulla rete interna, col nome `mail.listaspesafacile.com` mappato su 10.201.2.10
+  (`extra_hosts`) perché il certificato sia valido.
+- Il suo IP (10.201.2.20) è tra gli `AllowedIp` di Stalwart: altrimenti chi sbaglia la password dalla webmail
+  farebbe bannare la webmail per tutti. I tentativi dalla webmail li ferma il captcha.
+- Database SQLite nel volume `posta_webmail`; la tabella di rcguard la crea `webmail/rcguard-tabella.sh` all'avvio.
 
 ## Perché solo IPv4
 
