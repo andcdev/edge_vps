@@ -71,6 +71,14 @@ www.listaspesafacile.com, http://www.listaspesafacile.com {
 	import senza-www listaspesafacile.com
 }
 
+# ------------------------------------------------------------------- Posta
+# Pannello di Stalwart e webmail (posta/). Il certificato che Caddy ottiene per
+# questo nome lo usa anche Stalwart per SMTP e IMAP: lo copia posta/certificato.sh.
+mail.listaspesafacile.com {
+	import accessi
+	reverse_proxy posta-stalwart:8080
+}
+
 # ------------------------------------------------------------ tutto il resto
 http:// {
 	abort

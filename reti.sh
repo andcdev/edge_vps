@@ -20,3 +20,4 @@ rete() {
 
 rete proxy-magopdf 10.201.0.0/24
 rete proxy-lsf     10.201.1.0/24
+rete proxy-posta   10.201.2.0/24

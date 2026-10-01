@@ -11,6 +11,7 @@ Internet :80 :443 :8443 ──► edge (Caddy, /opt/edge)
    listaspesafacile.com    → http://lsf-caddy:80           rete proxy-lsf      10.201.1.0/24
    api.listaspesafacile.com→ http://lsf-caddy:80
    www.listaspesafacile.com→ 301 listaspesafacile.com
+   mail.listaspesafacile.com→ http://posta-stalwart:8080   rete proxy-posta    10.201.2.0/24
    IP nudo, altri nomi     → connessione chiusa
 ```
 
@@ -23,6 +24,7 @@ Se si ferma l'edge si fermano tutti: è piccolo e riparte in un secondo, ma è i
 | `caddy/Caddyfile` | un blocco per dominio |
 | `docker-compose.yml` | il container, le porte, le reti dei siti |
 | `reti.sh` | crea le reti `proxy-*` con sottoreti fisse (una volta sola, si può rilanciare) |
+| `posta/` | server di posta (Stalwart) per listaspesafacile.com e magopdf.com: vedi `posta/README.md` |
 
 Le sottoreti fisse servono ai siti per fidarsi dell'`X-Forwarded-For` solo quando arriva dall'edge
 (MagoPDF: `PROXY_SUBNET` → `set_real_ip_from` in nginx). L'edge scrive l'IP vero del client e scarta quello

@@ -1,0 +1,37 @@
+# Server di posta della VPS (Stalwart) per listaspesafacile.com e magopdf.com. Vedi README.md.
+#
+# Avvio:   docker compose up -d       (la rete proxy-posta la crea ../reti.sh)
+name: posta
+
+services:
+  stalwart:
+    image: stalwartlabs/stalwart:v0.16.24
+    container_name: posta-stalwart
+    restart: unless-stopped
+    environment:
+      # Indirizzo pubblico del pannello e della webmail, servito dall'edge.
+      STALWART_PUBLIC_URL: https://mail.listaspesafacile.com
+    # Solo IPv4: su IPv6 Docker passerebbe dal suo proxy e Stalwart vedrebbe il gateway al posto del vero
+    # mittente (SPF, liste nere e antispam sbagliati). Il nome mail.* ha solo il record A.
+    # Docker apre queste porte da sé, ufw non c'entra.
+    ports:
+      - "0.0.0.0:25:25"     # posta in arrivo dagli altri server
+      - "0.0.0.0:465:465"   # invio da client e app, TLS diretto
+      - "0.0.0.0:587:587"   # invio da client e app, STARTTLS
+      - "0.0.0.0:993:993"   # IMAP, TLS diretto
+    volumes:
+      - etc:/etc/stalwart          # solo config.json: dove sta il database
+      - dati:/var/lib/stalwart     # impostazioni, caselle, messaggi, chiavi DKIM
+      # Certificato di mail.listaspesafacile.com preso dall'edge (Caddy) da certificato.sh.
+      - ./tls:/tls:ro
+    networks:
+      proxy-posta:
+        ipv4_address: 10.201.2.10
+
+networks:
+  proxy-posta:
+    external: true
+
+volumes:
+  etc:
+  dati:
