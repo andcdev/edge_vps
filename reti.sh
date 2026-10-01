@@ -9,15 +9,17 @@
 # Caddyfile.
 set -e
 
-rete() {
+rete() {                          # $1 nome, $2 sottorete, $3 opzionale: --internal (nessuna uscita su Internet)
   if docker network inspect "$1" >/dev/null 2>&1; then
     echo "  $1: c'e' gia'"
   else
-    docker network create --subnet "$2" "$1" >/dev/null
-    echo "  $1: creata ($2)"
+    docker network create --subnet "$2" ${3:-} "$1" >/dev/null
+    echo "  $1: creata ($2${3:+, interna})"
   fi
 }
 
 rete proxy-magopdf 10.201.0.0/24
 rete proxy-lsf     10.201.1.0/24
 rete proxy-posta   10.201.2.0/24
+# Senza Internet: ci sono solo Stalwart (10.201.3.10) e i backend isolati che devono mandare email (MagoPDF).
+rete posta-interna 10.201.3.0/24 --internal

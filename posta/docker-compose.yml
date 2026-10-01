@@ -27,6 +27,9 @@ services:
     networks:
       proxy-posta:
         ipv4_address: 10.201.2.10
+      # Per i backend senza Internet (MagoPDF be-app): vedono Stalwart e basta.
+      posta-interna:
+        ipv4_address: 10.201.3.10
 
   # Webmail (Roundcube) su webmail.listaspesafacile.com, servita dall'edge. Captcha Turnstile al login (rcguard).
   webmail:
@@ -55,6 +58,8 @@ services:
 
 networks:
   proxy-posta:
+    external: true
+  posta-interna:
     external: true
 
 volumes:

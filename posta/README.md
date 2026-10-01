@@ -58,6 +58,14 @@ Stalwart non ha una webmail (`/account` è solo la gestione dell'account): c'è 
   farebbe bannare la webmail per tutti. I tentativi dalla webmail li ferma il captcha.
 - Database SQLite nel volume `posta_webmail`; la tabella di rcguard la crea `webmail/rcguard-tabella.sh` all'avvio.
 
+## Backend senza Internet (MagoPDF)
+
+Il backend di MagoPDF è su una rete Docker senza uscita su Internet, quindi non arriva all'IP pubblico. Per le
+email c'è la rete `posta-interna` (10.201.3.0/24, anch'essa `--internal`, creata da `../reti.sh`): ci sono solo
+Stalwart (10.201.3.10) e `magopdf-be-app`, che col nome `mail.listaspesafacile.com` mappato su 10.201.3.10
+(`extra_hosts` nel compose di MagoPDF) manda via SMTP 587 con STARTTLS, utente `noreply@magopdf.com`.
+Lista Spesa Facile invece ha Internet e passa dall'IP pubblico (465).
+
 ## Perché solo IPv4
 
 Su IPv6 Docker passa dal suo proxy e Stalwart vedrebbe come mittente il gateway, non il vero server: SPF,
