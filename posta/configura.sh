@@ -53,6 +53,13 @@ JSON
   echo "casella $c: creata, password in $(pwd)/caselle.txt"
 done
 
+# DKIM senza rotazione automatica: il DNS si gestisce a mano su netcup, e una chiave nuova senza il suo record
+# farebbe fallire la firma. Le chiavi create al primo giro restano; per cambiarle si fa a mano, DNS compreso.
+for d in "${DOMINI[@]}"; do
+  ./cli.sh update Domain "$(id_di Domain " $d ")" --json '{"dkimManagement": {"@type": "Manual"}}' >/dev/null
+done
+echo "DKIM: rotazione automatica spenta"
+
 # postmaster@ e abuse@ (obbligatori per le RFC; ci arrivano anche i rapporti DMARC e TLS) come alias di support@.
 for d in "${DOMINI[@]}"; do
   aid=$(id_di Account " support@$d ") did=$(id_di Domain " $d ")
