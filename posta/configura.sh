@@ -20,6 +20,8 @@ else
   ./cli.sh create NetworkListener --stdin >/dev/null <<'JSON'
 {"name": "submission", "bind": {"[::]:587": true}, "protocol": "smtp", "useTls": true, "tlsImplicit": false}
 JSON
+  docker compose restart stalwart >/dev/null   # un listener nuovo parte solo al riavvio
+  sleep 5
   echo "porta 587: creata"
 fi
 
