@@ -67,4 +67,8 @@ for d in "${DOMINI[@]}"; do
   echo "postmaster@$d e abuse@$d: alias di support@$d"
 done
 
+# Blocco degli IP dopo 10 login sbagliati in un giorno (Stalwart ne permette 100). Il blocco non scade.
+./cli.sh update Security --json '{"authBanRate": {"count": 10, "period": 86400000}}' >/dev/null
+echo "blocco IP: 10 login sbagliati al giorno"
+
 ./cli.sh create Action/ReloadSettings --json '{}' >/dev/null 2>&1 || true
