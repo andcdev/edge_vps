@@ -34,7 +34,7 @@ services:
   # Webmail (Roundcube) su webmail.listaspesafacile.com, servita dall'edge. Captcha Turnstile al login (rcguard).
   webmail:
     build: ./webmail
-    image: posta-webmail:1.7.4
+    image: posta-webmail:1.7.5
     container_name: posta-webmail
     restart: unless-stopped
     depends_on:
