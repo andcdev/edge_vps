@@ -10,8 +10,3 @@ RUN curl -fsSL "https://github.com/pbiering/roundcube-rcguard/archive/${RCGUARD}
 COPY rcguard.inc.php /usr/src/roundcubemail/plugins/rcguard/config.inc.php
 # A ogni avvio, dopo la creazione del database: la tabella di rcguard, se manca.
 COPY rcguard-tabella.sh /entrypoint-tasks/post-setup/10-rcguard-tabella.sh
-
-# PHP2Shell (CVE-2026-109618/109619, 21/10/2026): l immagine Roundcube ha ancora PHP 8.4.26.
-# Misura provvisoria: spegne session.upload_progress, il punto d attacco. Togliere quando
-# roundcube/roundcubemail esce con PHP >= 8.4.27.
-RUN echo "session.upload_progress.enabled = 0" > /usr/local/etc/php/conf.d/zz-php2shell.ini
